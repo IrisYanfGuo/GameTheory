@@ -165,20 +165,47 @@ class EGTReplicator(EGTSimulation):
 
                 ngb = self.__neighbor__(i,j)
                 # random choose a neighbor
-                pos = np.random.shuffle(ngb)[0]
+                np.random.shuffle(ngb)
+                pos = ngb[0]
                 # the prob of
                 prob= 1/2*(1+(self._payoff[pos[0],pos[1]]-self._payoff[i,j])/(self.n_neighbor*max_gap))
 
-                print(prob)
-                print(sum(prob))
+                actSelf = act[i,j]
+                actNgb = act[pos[0],pos[1]]
+
+                if actSelf==actNgb:
+                    # do not change
+                    pass
+                else:
+                    choice_arr = np.random.choice([actNgb,actSelf],300,True,[prob,1-prob])
+                    np.random.shuffle(choice_arr)
+                    self._act[i, j] = choice_arr[0]
+        self._allact.append(np.copy(self._act))
+        coopRate = sum(sum(self._act)) / (self.n_lattice * self.n_lattice)
+        self._coopLevel.append(coopRate)
 
 
 
+
+
+
+
+def randomPick(prob,aSelf,aNgb):
+    length = 1000
+    n = int(prob*length)
+    array = [aNgb for i in range(n)] + [aSelf for i in range(length- n)]
+    array = np.array(array)
+    np.random.shuffle(array)
+    return np.random.choice(array)
 
 
 
 a = EGTReplicator(4,10,7,0,0,4)
-a._play()
+a.play_ntimes(100)
+a.draw_4times(4)
+
+print(a._coopLevel)
+
 
 
 

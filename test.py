@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 
-a = {3:{2:3,3:2},1:{2:4,3:4}}
-print(max(a.values()))
+a=[[1,2],[3,4],[5,6],[7,8]]
+np.random.shuffle(a)
+print(a[0])
 

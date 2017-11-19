@@ -140,7 +140,7 @@ class EGTSimulation(object):
             payoff = self._allPay[start+i].astype(int)
             sns.heatmap(self._allact[start+i], fmt="d", linewidths=.5, annot=payoff, cmap='Set1', cbar=False)
             plt.title("step: "+str(start+i)+", cooperate rate: "+str(self._coopLevel[start+i]))
-        plt.show()
+
 
 
     def draw(self,step):
@@ -177,7 +177,10 @@ class EGTReplicator(EGTSimulation):
                     # do not change
                     pass
                 else:
+                    #print(actSelf,actNgb)
+                    #print(prob)
                     choice_arr = np.random.choice([actNgb,actSelf],300,True,[prob,1-prob])
+                    #print(sum(choice_arr))
                     np.random.shuffle(choice_arr)
                     self._act[i, j] = choice_arr[0]
         self._allact.append(np.copy(self._act))
@@ -200,9 +203,14 @@ def randomPick(prob,aSelf,aNgb):
 
 
 
-a = EGTReplicator(4,10,7,0,0,4)
-a.play_ntimes(100)
+a = EGTReplicator(20,10,7,0,0,4)
+a.play_ntimes(10)
+plt.figure(1,figsize=(10,10))
+a.draw_4times(0)
+plt.savefig("aa.png")
+plt.figure(2,figsize=(20,20))
 a.draw_4times(4)
+plt.savefig("a2.png")
 
 print(a._coopLevel)
 

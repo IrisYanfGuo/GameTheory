@@ -141,6 +141,16 @@ class EGTSimulation(object):
             sns.heatmap(self._allact[start+i], fmt="d", linewidths=.5, annot=payoff, cmap='Set1', cbar=False)
             plt.title("step: "+str(start+i)+", cooperate rate: "+str(self._coopLevel[start+i]))
 
+    def draw0_1_10_20_50(self):
+        step = 1
+        for i in [0,1,10,20,50]:
+            plt.subplot(3,2,step)
+            step +=1
+            payoff = self._allPay[i].astype(int)
+            sns.heatmap(self._allact[i], fmt="d", linewidths=.5, annot=payoff, cmap='Set1', cbar=False)
+            plt.title("step: "+str(i)+", cooperate rate: "+str(self._coopLevel[i]))
+
+
 
 
     def draw(self,step):
@@ -203,10 +213,10 @@ def randomPick(prob,aSelf,aNgb):
 
 
 
-a = EGTReplicator(20,10,7,0,0,4)
-a.play_ntimes(10)
-plt.figure(1,figsize=(10,10))
-a.draw_4times(0)
+a = EGTReplicator(25,10,7,0,0,8)
+a.play_ntimes(51)
+plt.figure(1,figsize=(15,20))
+a.draw0_1_10_20_50()
 plt.savefig("aa.png")
 plt.figure(2,figsize=(20,20))
 a.draw_4times(4)

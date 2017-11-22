@@ -138,7 +138,7 @@ class EGTSimulation(object):
 
     def draw0_1_10_20_50(self):
         step = 1
-        for i in [0, 1, 10, 20, 50]:
+        for i in [0, 1,5, 10, 20, 50]:
             plt.subplot(3, 2, step)
             step += 1
             payoff = self._allPay[i].astype(int)
@@ -237,39 +237,50 @@ plt.savefig("8l4ncop.png")
 '''
 for lattice in [4, 8, 12, 20, 50]:
     for ngb in [4, 8]:
-        a = EGTReplicator(lattice, 10, 7, 0, 3, ngb)
+        a = EGTSimulation(lattice, 10, 7, 0, 3, ngb)
         a.play_ntimes(51)
         plt.figure(figsize=(15, 20))
         a.draw0_1_10_20_50()
-        plt.savefig("./fig2/" + str(lattice) + "lattice" + str(ngb) + "ngb")
+        plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngb")
 
-        plt.figure(figsize=(20, 20))
-        a.draw_4times(0)
-        plt.savefig("./fig2/" + str(lattice) + "lattice" + str(ngb) + "ngb4run")
+        #plt.figure(figsize=(20, 20))
+        #a.draw_4times(0)
+        #plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngb4run")
 
         t = range(52)
         plt.figure()
         plt.plot(t, a._coopLevel)
         plt.ylim(0, 1)
-        plt.savefig("./fig2/" + str(lattice) + "lattice" + str(ngb) + "ngbCop")
-
+        plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngbCop")
 '''
 
+for ngb in [4, 8]:
+    plt.figure()
+    for lattice in [4, 8, 12, 20, 50]:
+        a = EGTSimulation(lattice, 10, 7, 0, 3, ngb)
+
+        t = range(52)
+        plt.plot(t, a._coopLevel)
+        plt.ylim(0, 1)
+    plt.legend(("4 lattices","8 lattices","12 lattices","20 lattices","50 lattices"))
+    plt.savefig("./fig/" + str(ngb) + "ngbCop")
+
+'''
 
 
 for lattice in [4, 8, 12, 20, 50]:
     for ngb in [4, 8]:
         cop20 = []
         for i in range(100):
-            a = EGTReplicator(lattice,10,7,0,3,ngb)
+            a = EGTSimulation(lattice,10,7,0,0,ngb)
             a.play_ntimes(50)
             cop20.append(a._coopLevel[50])
 
         plt.figure()
         plt.hist(cop20)
-        plt.title("Hist of end coop level " + str(lattice) + " lattices and " + str(ngb) + " ngbs(Replicator) mean: %2.3f std: %2.3f" %(np.mean(cop20),np.std(cop20)))
-        plt.savefig("./cophist/" + str(lattice) + "lattice" + str(ngb) + "ngbCop")
-
+        plt.title("Hist of end coop level " + str(lattice) + " lattices and " + str(ngb) + " ngbs(unconditionImi) mean: %2.3f std: %2.3f" %(np.mean(cop20),np.std(cop20)))
+        plt.savefig("./cophist_imi/" + str(lattice) + "lattice" + str(ngb) + "ngbCop_1")
+'''
 
 '''
 cop20 = []

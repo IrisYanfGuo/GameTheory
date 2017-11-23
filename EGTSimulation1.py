@@ -212,67 +212,86 @@ def randomPick(prob, aSelf, aNgb):
     np.random.shuffle(array)
     return np.random.choice(array)
 
-'''
-a = EGTSimulation(20, 10, 7, 0, 0, 4)
-a.play_ntimes(50)
-plt.figure(1, figsize=(15, 20))
-#a.draw0_1_30_60_100_300()
-plt.savefig("8l4n.png")
-plt.figure(2, figsize=(20, 20))
-a.draw_4times(0)
-plt.savefig("8l4n0.png")
-
-plt.figure(figsize=(20, 20))
-a.draw_4times(4)
-plt.savefig("8l4n4.png")
-
-print(a._coopLevel)
-plt.figure()
-t = range(51)
-plt.plot(t, a._coopLevel)
-plt.ylim(0, 1)
-plt.savefig("8l4ncop.png")
-'''
+# step 0 ,1,5,10,20,50
 
 '''
+
 for lattice in [4, 8, 12, 20, 50]:
     for ngb in [4, 8]:
-        a = EGTSimulation(lattice, 10, 7, 0, 3, ngb)
+        a = EGTSimulation(lattice, 10, 7, 0, 0, ngb)
         a.play_ntimes(51)
         plt.figure(figsize=(15, 20))
         a.draw0_1_10_20_50()
+
         plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngb")
 
         #plt.figure(figsize=(20, 20))
         #a.draw_4times(0)
         #plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngb4run")
 
-        t = range(52)
-        plt.figure()
-        plt.plot(t, a._coopLevel)
-        plt.ylim(0, 1)
-        plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngbCop")
+
+       # t = range(52)
+        #plt.figure()
+        #plt.plot(t, a._coopLevel)
+        #plt.ylim(0, 1)
+        #plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngbCop")
+
+for lattice in [4, 8, 12, 20, 50]:
+    for ngb in [4, 8]:
+        a = EGTReplicator(lattice, 10, 7, 0, 3, ngb)
+        a.play_ntimes(51)
+        plt.figure(figsize=(15, 20))
+        a.draw0_1_10_20_50()
+
+        plt.savefig("./fig2/" + str(lattice) + "lattice" + str(ngb) + "ngbRepli")
+
+            # plt.figure(figsize=(20, 20))
+            # a.draw_4times(0)
+            # plt.savefig("./fig/" + str(lattice) + "lattice" + str(ngb) + "ngb4run")
+
+           # t = range(52)
+            #plt.figure()
+            #plt.plot(t, a._coopLevel)
+            #plt.ylim(0, 1)
+            #plt.savefig("./fig2/" + str(lattice) + "lattice" + str(ngb) + "ngbRepli")
 '''
+
+# cooperational level comparison
+
+'''
+for ngb in [4, 8]:
+    plt.figure()
+    for lattice in [4, 8, 12, 20, 50]:
+        a = EGTSimulation(lattice, 10, 7, 0, 0, ngb)
+        a.play_ntimes(51)
+        t = range(52)
+        plt.plot(t,a._coopLevel)
+        plt.ylim(0, 1)
+    plt.legend(("4 lattices","8 lattices","12 lattices","20 lattices","50 lattices"))
+    plt.title("cooperation level with %d neighbors(Unconditional Imitation)"%(ngb))
+    plt.savefig("./fig/" + str(ngb) + "ngbCop")
+
 
 for ngb in [4, 8]:
     plt.figure()
     for lattice in [4, 8, 12, 20, 50]:
-        a = EGTSimulation(lattice, 10, 7, 0, 3, ngb)
-
+        a = EGTReplicator(lattice, 10, 7, 0, 3, ngb)
+        a.play_ntimes(51)
         t = range(52)
-        plt.plot(t, a._coopLevel)
+        plt.plot(t,a._coopLevel)
         plt.ylim(0, 1)
     plt.legend(("4 lattices","8 lattices","12 lattices","20 lattices","50 lattices"))
-    plt.savefig("./fig/" + str(ngb) + "ngbCop")
+    plt.title("cooperation level with %d neighbors(Replicator Rule)"%(ngb))
+    plt.savefig("./fig2/" + str(ngb) + "ngbCopRepli")
 
 '''
 
-
+'''
 for lattice in [4, 8, 12, 20, 50]:
     for ngb in [4, 8]:
         cop20 = []
         for i in range(100):
-            a = EGTSimulation(lattice,10,7,0,0,ngb)
+            a = EGTReplicator(lattice,10,7,0,3,ngb)
             a.play_ntimes(50)
             cop20.append(a._coopLevel[50])
 
@@ -280,19 +299,61 @@ for lattice in [4, 8, 12, 20, 50]:
         plt.hist(cop20)
         plt.title("Hist of end coop level " + str(lattice) + " lattices and " + str(ngb) + " ngbs(unconditionImi) mean: %2.3f std: %2.3f" %(np.mean(cop20),np.std(cop20)))
         plt.savefig("./cophist_imi/" + str(lattice) + "lattice" + str(ngb) + "ngbCop_1")
+
+'''
+
+# histggram
+
+'''
+
+for ngb in [4, 8]:
+    plt.figure(figsize=(15, 20))
+    step = 0
+    for lattice in [4, 8, 12, 20, 50]:
+
+        cop20 = []
+        for i in range(100):
+            a = EGTSimulation(lattice,10,7,0,0,ngb)
+            a.play_ntimes(50)
+            cop20.append(a._coopLevel[50])
+        step +=1
+        plt.subplot(3,2,step)
+        plt.hist(cop20)
+        plt.title("Hist of end coop level " + str(lattice) + " lattices and " + str(ngb) + " ngbs(unconditionImi) mean: %2.3f std: %2.3f" %(np.mean(cop20),np.std(cop20)))
+    plt.savefig("./cophist_imi/+%dngbCop_hist"%ngb)
 '''
 
 '''
-cop20 = []
-for i in range(100):
 
-    a = EGTReplicator(4,10,7,0,3,4)
-    a.play_ntimes(10)
-    cop20.append(a._coopLevel[10])
+for ngb in [4, 8]:
+    plt.figure(figsize=(15, 20))
+    step = 0
+    for lattice in [4, 8, 12, 20, 50]:
 
-plt.figure()
+        cop20 = []
+        for i in range(100):
+            a = EGTReplicator(lattice,10,7,0,3,ngb)
+            a.play_ntimes(50)
+            cop20.append(a._coopLevel[50])
+        step +=1
+        plt.subplot(3,2,step)
+        plt.hist(cop20)
+        plt.title("Hist of end coop level " + str(lattice) + " lattices and " + str(ngb) + " ngbs(Repli) mean: %2.3f std: %2.3f" %(np.mean(cop20),np.std(cop20)))
+    plt.savefig("./cophist_imi/+%dngbCop_hist_repli"%ngb)
 
-plt.hist(cop20)
-plt.title("The histgram of " + " lattices and "  + "neighbors mean: %2.3f" %(np.mean(cop20)) )
-plt.show()
 '''
+'''
+
+    cop20 = []
+    for i in range(100):
+
+        a = EGTReplicator(4,10,7,0,3,4)
+        a.play_ntimes(10)
+        cop20.append(a._coopLevel[10])
+
+    plt.figure()
+
+    plt.hist(cop20)
+    plt.title("The histgram of " + " lattices and "  + "neighbors mean: %2.3f" %(np.mean(cop20)) )
+    plt.show()
+    '''

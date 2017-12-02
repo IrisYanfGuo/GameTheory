@@ -1,4 +1,4 @@
-from EGTSimulation1 import *
+from EGT.EGTSimulation1 import *
 
 plt.figure(figsize=(20, 40))
 step = 0

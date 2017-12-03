@@ -29,7 +29,7 @@ class NArmQlearning(object):
             if len(self.qStar[i]) > 0:
                 reward_action.append(np.mean(self.qStar[i]))
             else:
-                reward_action.append(np.random.normal(self._musigma[i]['mu'], self._musigma[i]['sigma']))
+                reward_action.append(0)
 
         maxIndex = np.argmax(reward_action)
         maxReward = np.random.normal(self._musigma[maxIndex]['mu'], self._musigma[maxIndex]['sigma'])
@@ -65,7 +65,7 @@ class NArmQlearning(object):
             if len(self.qStar[i]) > 0:
                 reward_action.append(np.mean(self.qStar[i]))
             else:
-                reward_action.append(np.random.normal(self._musigma[i]['mu'], self._musigma[i]['sigma']))
+                reward_action.append(0)
 
         eqt = []
         for i in range(4):
@@ -166,7 +166,7 @@ plt.show()
 
 '''
 a = NArmQlearning(reward1)
-a.playtauT()
+a.playtau1()
 plt.figure()
 draw_q(a.reward)
 draw_q(a.qStar[0])

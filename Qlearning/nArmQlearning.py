@@ -3,6 +3,12 @@ import math
 
 import matplotlib.pyplot as plt
 
+def meanList(list):
+    if len(list)==0:
+        return 0
+    else:
+        return np.mean(list)
+
 reward1 = [{'mu': 2.1, 'sigma': 0.9}, {'mu': 1.1, 'sigma': 0.8}, {'mu': 0.7, 'sigma': 2}, {'mu': 1.9, 'sigma': 0.9}]
 
 
@@ -12,15 +18,14 @@ class NArmQlearning(object):
         # there are 4 actions
         self._musigma = musigma
         # intialize the Q value
-
+        self.qstarSum = [0,0,0,0]
         self.qStar = [[], [], [], []]
         # the actions selected in each run
+        self.rewardSum = 0
         self.reward = []
         self.action = []
         self.step = 0
 
-    def _reward(self, mu, sigma):
-        return np.random.normal(mu, sigma, 1)
 
     def _play_epsilon(self, epsilon):
         self.step += 1
@@ -40,11 +45,12 @@ class NArmQlearning(object):
         randomNum = np.random.uniform(0, 1)
         if randomNum < epsilon:
             # if smaller than episilon, random select an action
-            self.reward.append(randomReward)
+            self.rewardSum +=randomReward
+            self.reward.append(self.rewardSum/self.step)
             self.action.append(randomAction)
             for i in range(4):
                 if i != randomAction:
-                    self.qStar[i].append(reward_action[i])
+                    self.qStar[i].append(self.re)
                 else:
 
                     self.qStar[randomAction].append(randomReward)
@@ -108,6 +114,34 @@ class NArmQlearning(object):
             for i in [0, 1, 2]:
                 self.qStar[i].append(reward_action[i])
 
+
+    def _playrandom(self):
+        self.step += 1
+
+        randomNum = np.random.uniform(0,1)
+        if randomNum<0.25:
+            actionchosen = 0
+        elif randomNum <0.5:
+            actionchosen = 1
+        elif randomNum <0.75:
+            actionchosen = 2
+        else:
+            actionchosen = 3
+
+        reward = np.random.normal(self._musigma[actionchosen]['mu'], self._musigma[actionchosen]['sigma'])
+
+        # update the q/qstar/action
+        self.action.append(actionchosen)
+        self.reward.append(reward)
+        for i in range(4):
+            if i == actionchosen:
+                self.qStar[i].append(reward)
+            else:
+                self.qStar[i].append(meanList(self.qStar[i]))
+
+
+
+
     def playepsilon0(self):
         for i in range(1000):
             self._play_epsilon(0)
@@ -138,6 +172,10 @@ class NArmQlearning(object):
             tau = 4*(1000-i)/1000
             self._playtau(tau)
 
+    def playrandom(self):
+        for i in range(1000):
+            self._playrandom()
+
 
 
 
@@ -165,17 +203,114 @@ plt.legend(['q','qStar1','qStar2','qStar3','qStar4'])
 plt.show()
 
 '''
+'''
 a = NArmQlearning(reward1)
-a.playtau1()
+b = NArmQlearning(reward1)
+c = NArmQlearning(reward1)
+d = NArmQlearning(reward1)
+e = NArmQlearning(reward1)
+
+a.playepsilon0()
+b.playepsilon1()
+c.playepsilon2()
+d.playtau1()
+e.playtau2()
+
+
+
 plt.figure()
 draw_q(a.reward)
-draw_q(a.qStar[0])
-draw_q(a.qStar[1])
-draw_q(a.qStar[2])
-draw_q(a.qStar[3])
-plt.legend(['q','qStar1','qStar2','qStar3','qStar4'])
-plt.show()
+draw_q(b.reward)
+draw_q(c.reward)
+draw_q(d.reward)
+draw_q(e.reward)
+
+plt.legend(['epsilon=0','epsilon=0.01','epsilon=0.1','tau=1','tau=0.01'])
+plt.title("Reward for 5 algorithms")
+plt.xlabel("Step")
+plt.ylabel("Reward")
+plt.savefig('./fig/reward.png')
+
+
+
+for i in range(4):
+    plt.figure()
+    draw_q(a.qStar[i])
+    draw_q(b.qStar[i])
+    draw_q(c.qStar[i])
+    draw_q(d.qStar[i])
+    draw_q(e.qStar[i])
+
+
+    plt.legend(['epsilon=0','epsilon=0.01','epsilon=0.1','tau=1','tau=0.01'])
+    plt.title("Reward for action %d  of 5 algorithms" %i)
+    plt.xlabel("Step")
+    plt.ylabel("Reward")
+
+    plt.savefig("./fig/action%d.png"%i)
+
+
 
 plt.figure()
 plt.hist(a.action)
+plt.title("histogram for action chosen")
+plt.savefig("./fig/hista.png")
+plt.figure()
+plt.hist(b.action)
+plt.title("histogram for action chosen")
+plt.savefig("./fig/histb.png")
+plt.figure()
+plt.hist(c.action)
+plt.title("histogram for action chosen")
+plt.savefig("./fig/histc.png")
+plt.figure()
+plt.hist(d.action)
+plt.title("histogram for action chosen")
+plt.savefig("./fig/histd.png")
+plt.figure()
+plt.hist(e.action)
+plt.title("histogram for action chosen")
+plt.savefig("./fig/histe.png")
+
+'''
+# play multiple times
+
+a=[]
+
+for i in range(10):
+    temp = []
+    for j in range(6):
+        temp.append(NArmQlearning(reward1))
+    a.append(temp)
+
+for i in range(10):
+    a[i][0].playepsilon0()
+    a[i][1].playepsilon1()
+    a[i][2].playepsilon2()
+    a[i][3].playtau1()
+    a[i][4].playtau2()
+    a[i][5].playrandom()
+
+# draw the mean value
+playerMeanReward = []
+for i in range(6):
+    temp = []
+    for j in range(10):
+        temp.append(a[j][i].reward)
+
+    bb = []
+    for i in range(1000):
+        tempList = [temp[j][i] for j in range(6)]
+        tempmean = meanList(tempList)
+        bb.append(tempmean)
+    playerMeanReward.append(bb)
+
+plt.figure()
+for i in range(1):
+    t = range(len(playerMeanReward[i]))
+    plt.plot(t,playerMeanReward[i])
+    plt.ylim([0,3])
+
 plt.show()
+
+

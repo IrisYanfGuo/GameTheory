@@ -3,7 +3,7 @@ import math
 
 import matplotlib.pyplot as plt
 
-trials = 10
+trials = 500
 
 def meanList(list):
     if len(list)==0:
@@ -12,6 +12,7 @@ def meanList(list):
         return np.mean(list)
 
 reward1 = [{'mu': 2.1, 'sigma': 0.9}, {'mu': 1.1, 'sigma': 0.8}, {'mu': 0.7, 'sigma': 2}, {'mu': 1.9, 'sigma': 0.9}]
+# doubling the standard derivation
 reward2 = [{'mu': 2.1, 'sigma': 0.9*2}, {'mu': 1.1, 'sigma': 0.8*2}, {'mu': 0.7, 'sigma': 2*2}, {'mu': 1.9, 'sigma': 0.9*2}]
 
 
@@ -48,7 +49,7 @@ class NArmQlearning(object):
             actionChosen = maxIndex
 
         # update the q/action/qstar/sum
-        self.action.append(actionChosen)
+        self.action.append(int(actionChosen))
         self.actionTimes[actionChosen] +=1
         reward = np.random.normal(self._musigma[actionChosen]['mu'], self._musigma[actionChosen]['sigma'])
         self.rewardSum +=  reward
@@ -114,7 +115,7 @@ class NArmQlearning(object):
             actionChosen = 3
 
 
-        self.action.append(actionChosen)
+        self.action.append(int(actionChosen))
         self.actionTimes[actionChosen] += 1
         reward = np.random.normal(self._musigma[actionChosen]['mu'], self._musigma[actionChosen]['sigma'])
         self.rewardSum += reward
@@ -175,13 +176,13 @@ def draw_q(list):
 agents=[]
 for i in range(6):
     temp = []
-    #play 10 times
+    #play trials times
     for j in  range(trials):
         temp.append(NArmQlearning(reward1))
     agents.append(temp)
 
-# play 10 times and then avg the results
-for i in range(10):
+# play trials times and different players play different algorithms, then average the results
+for i in range(trials):
     agents[0][i].playepsilon0()
     agents[1][i].playepsilon1()
     agents[2][i].playepsilon2()
@@ -205,6 +206,7 @@ for i in range(6):
     rewardStd.append(tstd)
 
 
+# figures
 plt.figure()
 
 for i in range(6):
@@ -238,7 +240,7 @@ for i in range(6):
         tAvg = []
         tStd = []
         for step in range(1000):
-            t = [agents[i][k].qStarAvg[action][step] for k in range(10)]
+            t = [agents[i][k].qStarAvg[action][step] for k in range(trials)]
             tAvg.append(np.mean(t))
             tStd.append(np.std(t))
         agAvg.append(tAvg)
@@ -290,7 +292,7 @@ for i in range(6):
     agents.append(temp)
 
 # play 10 times and then avg the results
-for i in range(10):
+for i in range(trials):
     agents[0][i].playepsilon0()
     agents[1][i].playepsilon1()
     agents[2][i].playepsilon2()
@@ -347,7 +349,7 @@ for i in range(6):
         tAvg = []
         tStd = []
         for step in range(1000):
-            t = [agents[i][k].qStarAvg[action][step] for k in range(10)]
+            t = [agents[i][k].qStarAvg[action][step] for k in range(trials)]
             tAvg.append(np.mean(t))
             tStd.append(np.std(t))
         agAvg.append(tAvg)
@@ -402,7 +404,7 @@ for i in range(6):
     agents.append(temp)
 
 # play 10 times and then avg the results
-for i in range(10):
+for i in range(trials):
     agents[0][i].playepsilonT()
     agents[1][i].playepsilon1()
     agents[2][i].playepsilon2()
@@ -459,7 +461,7 @@ for i in range(6):
         tAvg = []
         tStd = []
         for step in range(1000):
-            t = [agents[i][k].qStarAvg[action][step] for k in range(10)]
+            t = [agents[i][k].qStarAvg[action][step] for k in range(trials)]
             tAvg.append(np.mean(t))
             tStd.append(np.std(t))
         agAvg.append(tAvg)
@@ -488,6 +490,7 @@ for i in range(4):
     plt.xlabel("step")
     plt.ylabel("reward")
 plt.savefig("./fig3/actionStd3.png")
+title= ['(epsilon=1/sqrt(t))','(epsilon=0.01)','(epsilon=0.1)','(tau=1)','(tau=0.1)','(tau=4*(1000-t)/1000)']
 
 plt.figure(figsize=(15,20))
 plt.legend(["time varing epsilon",'epsilon0.01','episilon0.1','tau1','tau0.1','time varing tau'])

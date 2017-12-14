@@ -10,10 +10,14 @@ class JointActionLearn():
         self.qStar=[[[],[],[]],[[],[],[]],[[],[],[]]]
 
         self.step = 0
+        # at first, select each action with equal probabilities
         self.probA = np.zeros(3)+1/3
         self.probB = np.zeros(3)+1/3
+        # track the change of probabilities
         self.probAList = [[1/3],[1/3],[1/3]]
         self.probBList = [[1/3],[1/3],[1/3]]
+        # the qstar for independent learners
+        self.qstarInde = [[[],[],[]],[[],[],[]]]
 
 
     def _playBoltz(self, tau):
@@ -80,7 +84,7 @@ class JointActionLearn():
             eqtB.append(np.exp(EVB[i]/tau))
 
 
-        # update the Prob
+        # update the Probability for each action
         for i in range(3):
 
             self.probB[i] = eqtB[i]/sum(eqtB)
@@ -167,8 +171,83 @@ class JointActionLearn():
             self.probAList[i].append(eqtA[i] / sum(eqtA))
 
 
+    def _playIndependent(self,tau):
+        self.step +=1
+
+        # choose action for A
+        randomNum = np.random.uniform(0, 1)
+        if randomNum < self.probA[0]:
+            aaction = 0
+        elif randomNum < sum(self.probA[:2]):
+            aaction = 1
+        else:
+            aaction = 2
+
+            # choose action for B
+        randomNum = np.random.uniform(0, 1)
+        if randomNum < self.probB[0]:
+            baction = 0
+        elif randomNum < sum(self.probB[:2]):
+            baction = 1
+        else:
+            baction = 2
+
+        # get the reward
+        rewardnow = np.random.normal(self._musigma[baction][aaction][0], self._musigma[baction][aaction][1])
+        # update the qStarInde/q/action
+        self.qstarInde[0][aaction].append(rewardnow)
+        self.qstarInde[1][baction].append(rewardnow)
+        self.q.append(rewardnow)
+
+        # update the reward for per action
+        EVB = []
+        EVA = []
+
+        for i in range(3):
+            s = 0
+            if len(self.qstarInde[1][i])>0:
+                s = np.mean(self.qstarInde[1][i])
+            EVB.append(s)
+
+        for i in range(3):
+            s = 0
+            if len(self.qstarInde[0][i]) > 0:
+                s = np.mean(self.qstarInde[0][i])
+            EVA.append(s)
+
+
+
+        if self.step == 4999:
+            print("EVA:",EVA)
+            print("EVB:",EVB)
+
+        # update the eqt
+        eqtA = []
+        eqtB = []
+        for i in range(3):
+            eqtA.append(np.exp(EVA[i]/tau))
+            eqtB.append(np.exp(EVB[i]/tau))
+
+
+        # update the Prob
+        for i in range(3):
+
+            self.probB[i] = eqtB[i]/sum(eqtB)
+            self.probBList[i].append(eqtB[i] / sum(eqtB))
+
+        for i in range(3):
+            self.probA[i] = eqtA[i]/sum(eqtA)
+            self.probAList[i].append(eqtA[i] / sum(eqtA))
+
+
+
+
+
+
+
     def _playFCQ(self,c):
         self.step += 1
+
 
         # choose action for A
         randomNum = np.random.uniform(0, 1)
@@ -223,22 +302,20 @@ class JointActionLearn():
 
     def playBolt(self):
         for i in range(5000):
-            tau = 16*(0.999**i)
+            tau = 5000*(0.998**i)
             self._playBoltz(tau)
 
     def playOptiBolt(self):
         for i in range(5000):
-            tau = 16 * (0.999 ** i)
+            tau = 5000 * (0.998 ** i)
             self._playOptiBoltz(tau)
 
+    def playIndependent(self):
+        for i in range(5000):
+            tau = 5000 * (0.998 ** i)
+            self._playIndependent(tau)
 
-a = JointActionLearn(0.2,0.2,0.2)
-a1 = JointActionLearn(0.2,0.2,0.2)
-b = JointActionLearn(4,0.1,0.1)
-b1= JointActionLearn(4,0.1,0.1)
-c = JointActionLearn(0.1,0.1,4)
-c1= JointActionLearn(0.1,0.1,4)
-
+# moving average function
 def movAvg(alist,window):
     # use an odd integer
     step = int((window-1)/2)
@@ -254,6 +331,19 @@ def movAvg(alist,window):
     return res
 
 
+
+
+# agents with different sigma0 and sigma 1
+a = JointActionLearn(0.2,0.2,0.2)
+a1 = JointActionLearn(0.2,0.2,0.2)
+b = JointActionLearn(4,0.1,0.1)
+b1= JointActionLearn(4,0.1,0.1)
+c = JointActionLearn(0.1,0.1,4)
+c1= JointActionLearn(0.1,0.1,4)
+
+
+
+# different agents play different action selection methods
 a.playBolt()
 a1.playOptiBolt()
 b.playBolt()
@@ -261,6 +351,7 @@ b1.playOptiBolt()
 c.playBolt()
 c1.playOptiBolt()
 
+# moving average the results with the window 51
 aq = movAvg(a.q,51)
 a1q = movAvg(a1.q,51)
 
@@ -269,6 +360,7 @@ b1q = movAvg(b1.q,51)
 cq = movAvg(c.q,51)
 c1q = movAvg(c1.q,51)
 
+# plot the figures
 plt.figure()
 plt.plot(aq)
 plt.plot(a1q)
@@ -304,7 +396,7 @@ plt.plot(a.probAList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['A-action0','A-action1','A-action2'])
-plt.title("Probability of A's actions\n(sigma0=sigma1=sigma2=0.2,optimistic boltzmann)")
+plt.title("Probability of A's actions\n(sigma0=sigma1=sigma2=0.2,simple boltzmann)")
 
 plt.subplot(3,2,2)
 plt.plot(a.probBList[0])
@@ -313,7 +405,7 @@ plt.plot(a.probBList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['B-action0','B-action1','B-action2'])
-plt.title("Probability of B's actions\n(sigma0=sigma1=sigma2=0.2,optimistic boltzmann)")
+plt.title("Probability of B's actions\n(sigma0=sigma1=sigma2=0.2,simple boltzmann)")
 
 
 plt.subplot(3,2,3)
@@ -323,7 +415,7 @@ plt.plot(b.probAList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['A-action0','A-action1','A-action2'])
-plt.title("Probability of A's actions\n(sigma0=4,sigma1=sigma= 0.1,optimistic boltzmann)")
+plt.title("Probability of A's actions\n(sigma0=4,sigma1=sigma= 0.1,simple boltzmann)")
 
 plt.subplot(3,2,4)
 plt.plot(b.probBList[0])
@@ -332,7 +424,7 @@ plt.plot(b.probBList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['B-action0','B-action1','B-action2'])
-plt.title("Probability of B's actions\n(sigma0=4,sigma1=sigma= 0.1,optimistic boltzmann)")
+plt.title("Probability of B's actions\n(sigma0=4,sigma1=sigma= 0.1,simple boltzmann)")
 
 plt.subplot(3,2,5)
 plt.plot(c.probAList[0])
@@ -341,7 +433,7 @@ plt.plot(c.probAList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['A-action0','A-action1','A-action2'])
-plt.title("Probability of A's actions\n(sigma1=4,sigma0=sigma= 0.1,optimistic boltzmann)")
+plt.title("Probability of A's actions\n(sigma1=4,sigma0=sigma= 0.1,simple boltzmann)")
 
 plt.subplot(3,2,6)
 plt.plot(c.probBList[0])
@@ -350,7 +442,7 @@ plt.plot(c.probBList[2])
 plt.xlabel("step")
 plt.ylabel("Probability")
 plt.legend(['B-action0','B-action1','B-action2'])
-plt.title("Probability of B's actions\n(sigma1=4,sigma0=sigma= 0.1,optimistic boltzmann)")
+plt.title("Probability of B's actions\n(sigma1=4,sigma0=sigma= 0.1,simple boltzmann)")
 
 plt.savefig("./JAL/prob1.png")
 
@@ -411,3 +503,39 @@ plt.legend(['B-action0','B-action1','B-action2'])
 plt.title("Probability of B's actions\n(sigma1=4,sigma0=sigma= 0.1,optimistic boltzmann)")
 
 plt.savefig("./JAL/prob2.png")
+
+
+# explore the performance of independent learners
+a = JointActionLearn(0.2,0.2,0.2)
+a.playIndependent()
+aq = movAvg(a.q,51)
+plt.figure()
+plt.plot(aq)
+
+plt.xlabel("step")
+plt.ylabel("reward")
+plt.legend(["reward received(act as Independent learners)"])
+plt.show()
+
+plt.figure()
+plt.subplot(1,2,1)
+plt.plot(a.probAList[0])
+plt.plot(a.probAList[1])
+plt.plot(a.probAList[2])
+plt.xlabel("step")
+plt.ylabel("Probability")
+plt.legend(['A-action0','A-action1','A-action2'])
+plt.title("Probability of A's actions\n(sigma0=sigma1=sigma2=0.2,Indepedent Learners)")
+
+
+plt.subplot(1,2,2)
+plt.plot(a.probBList[0])
+plt.plot(a.probBList[1])
+plt.plot(a.probBList[2])
+plt.xlabel("step")
+plt.ylabel("Probability")
+plt.legend(['B-action0','B-action1','B-action2'])
+plt.title("Probability of B's actions\n(sigma0=sigma1=sigma2=0.2,Independent Learners)")
+plt.show()
+
+
